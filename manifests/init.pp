@@ -164,7 +164,6 @@ class redis (
     owner   => root,
     group   => root,
     mode    => '0644',
-    require => Package['redis'],
   }
 
   file { $conf_logrotate:
@@ -181,8 +180,6 @@ class redis (
     user    => root,
     group   => root,
     creates => $conf_dir,
-    before  => Service['redis'],
-    require => Package['redis'],
   }
 
   file { $conf_dir:
@@ -190,8 +187,6 @@ class redis (
     owner   => redis,
     group   => redis,
     mode    => '0755',
-    before  => Service['redis'],
-    require => Exec[$conf_dir],
   }
 
   if ( $system_sysctl == true ) {
@@ -207,5 +202,11 @@ class redis (
     Exec[$conf_dir] ~> Service['redis']
     File[$conf_redis] ~> Service['redis']
   }
+
+  Package['redis']->
+  Exec[$conf_dir]->
+  File[$conf_redis]->
+  File[$conf_dir]->
+  Service['redis']
 
 }
